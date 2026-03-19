@@ -1,20 +1,32 @@
-# Makefile for Nepali-Calendar-Event-Manager
-
+cat > Makefile << 'EOF'
 CXX = g++
-CXXFLAGS = -Wall -Wextra -std=c++11
-
-# Source files
-SOURCES = calendar.h main.cpp users.cpp events.cpp nepali_date.cpp display.cpp database.cpp
-
-# Executable name
+CXXFLAGS = -std=c++17 -Wall -Wextra
 TARGET = calendar
+SOURCES = main.cpp calendar.cpp users.cpp events.cpp database.cpp nepali_date.cpp
+OBJECTS = $(SOURCES:.cpp=.o)
 
-# Build rule
 all: $(TARGET)
 
-$(TARGET): $(SOURCES)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(SOURCES)
+$(TARGET): $(OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJECTS)
 
-# Clean rule
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $<
+
 clean:
-	rm -f $(TARGET)
+	rm -f $(OBJECTS) $(TARGET) *.dat *.bak
+
+run: $(TARGET)
+	./$(TARGET)
+
+help:
+	@echo "========================================"
+	@echo "Nepali Calendar Event Manager"
+	@echo "========================================"
+	@echo "  make       - Compile"
+	@echo "  make clean - Clean"
+	@echo "  make run   - Run"
+	@echo "========================================"
+
+.PHONY: all clean run help
+EOF
