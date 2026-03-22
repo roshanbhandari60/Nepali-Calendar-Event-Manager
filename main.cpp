@@ -28,64 +28,21 @@ bool parseDate(const string& s, int& y, int& m, int& d) {
 }
 
 int main(int argc, char* argv[]) {
+
     loadUsersFromFile();
     loadEventsFromFile();
 
     string session = userManager.getSession();
 
+<<<<<<< Updated upstream
     // ── No args: today ────────────────────────────────────────────────────────
+=======
+    // ── No args: show today ───────────────────────────────────────────────────
+
+>>>>>>> Stashed changes
     if (argc == 1) {
         auto today = CalendarDisplay::todayBS();
 
-        // Build today's date string for event lookup
-        char todayStr[11];
-        snprintf(todayStr, sizeof(todayStr), "%04d-%02d-%02d",
-                 today.year, today.month, today.day);
-
-        // Get all events for month (for highlighting)
-        vector<Event> monthEvents = eventManager.getEventsByMonth(today.year, today.month);
-
-        calendarDisplay.displayMonth(today.month, today.year, today.day, monthEvents);
-
-        // Show today's date info
-        time_t t = time(nullptr);
-        struct tm* ti = localtime(&t);
-        cout << "\033[36m  Today: "
-             << today.day << " "
-             << CalendarDisplay::nepali_month_names[today.month - 1]
-             << " " << today.year << " BS  =  "
-             << ti->tm_mday << " "
-             << CalendarDisplay::ad_month_names[ti->tm_mon]
-             << " " << ti->tm_year + 1900 << " AD\033[0m\n";
-
-        // Show today's events
-        vector<Event> todayEvents = eventManager.getEventsByDate(string(todayStr));
-        if (todayEvents.empty()) {
-            cout << "\033[33m  No events today.\033[0m\n\n";
-        } else {
-            cout << "\n\033[1;33m  Events today:\033[0m\n";
-            for (int i = 0; i < (int)todayEvents.size(); i++) {
-                cout << "  \033[1;33m[" << i + 1 << "] "
-                     << todayEvents[i].title << "\033[0m"
-                     << "  at " << todayEvents[i].time << "\n";
-                cout << "      " << todayEvents[i].description << "\n";
-            }
-            cout << "\n";
-        }
-        return 0;
-    }
-
-    string cmd = argv[1];
-
-    // ── help ──────────────────────────────────────────────────────────────────
-    if (cmd == "help") {
-        calendarDisplay.displayHelp();
-        return 0;
-    }
-
-    // ── today ─────────────────────────────────────────────────────────────────
-    if (cmd == "today") {
-        auto today = CalendarDisplay::todayBS();
         char todayStr[11];
         snprintf(todayStr, sizeof(todayStr), "%04d-%02d-%02d",
                  today.year, today.month, today.day);
@@ -120,6 +77,14 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    string cmd = argv[1];
+
+    // ── help ──────────────────────────────────────────────────────────────────
+    if (cmd == "help") {
+        calendarDisplay.displayHelp();
+        return 0;
+    }
+
     // ── -y 2082 ───────────────────────────────────────────────────────────────
     if (cmd == "-y" && argc >= 3) {
         int year = stoi(argv[2]);
@@ -134,17 +99,14 @@ int main(int argc, char* argv[]) {
         string yStr = getArg(argc, argv, "-y");
         year = !yStr.empty() ? stoi(yStr) : CalendarDisplay::todayBS().year;
 
-        // Get events for this month for highlighting
         vector<Event> monthEvents = eventManager.getEventsByMonth(year, month);
 
-        // Check if today is in this month for highlight
         auto today = CalendarDisplay::todayBS();
         int highlightDay = (today.year == year && today.month == month)
                            ? today.day : -1;
 
         calendarDisplay.displayMonth(month, year, highlightDay, monthEvents);
 
-        // List all events for this month
         if (monthEvents.empty()) {
             cout << "\033[33m  No events this month.\033[0m\n\n";
         } else {
@@ -156,7 +118,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    // ── ad  /  ad -m 3 -y 2026 ────────────────────────────────────────────────
+    // ── ad  /  ad -m 3 -y 2026 ───────────────────────────────────────────────
     if (cmd == "ad") {
         int month, year;
         string mStr = getArg(argc, argv, "-m");
@@ -174,7 +136,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    // ── convert 2082-01-22 ────────────────────────────────────────────────────
+    // ── convert 2082-01-22  (BS → AD) ────────────────────────────────────────
     if (cmd == "convert" && argc >= 3) {
         int y, m, d;
         if (!parseDate(argv[2], y, m, d)) {
@@ -191,7 +153,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    // ── convert-ad 2026-04-05 ─────────────────────────────────────────────────
+    // ── convert-ad 2026-04-05  (AD → BS) ─────────────────────────────────────
     if (cmd == "convert-ad" && argc >= 3) {
         int y, m, d;
         if (!parseDate(argv[2], y, m, d)) {
@@ -211,7 +173,7 @@ int main(int argc, char* argv[]) {
     // ── register ──────────────────────────────────────────────────────────────
     if (cmd == "register") {
         if (argc < 5) {
-            cout << "\033[31m✗ Usage: ./calendar register <username> <password> <email>\033[0m\n";
+            cout << "\033[31m✗ Usage: nepcal register <username> <password> <email>\033[0m\n";
             return 1;
         }
         User u;
@@ -225,7 +187,7 @@ int main(int argc, char* argv[]) {
     // ── login ─────────────────────────────────────────────────────────────────
     if (cmd == "login") {
         if (argc < 4) {
-            cout << "\033[31m✗ Usage: ./calendar login <username> <password>\033[0m\n";
+            cout << "\033[31m✗ Usage: nepcal login <username> <password>\033[0m\n";
             return 1;
         }
         userManager.loginUser(argv[2], argv[3]);
@@ -254,11 +216,11 @@ int main(int argc, char* argv[]) {
     // ── createevent ───────────────────────────────────────────────────────────
     if (cmd == "createevent") {
         if (session.empty()) {
-            cout << "\033[31m✗ Login first: ./calendar login <user> <pass>\033[0m\n";
+            cout << "\033[31m✗ Login first: nepcal login <user> <pass>\033[0m\n";
             return 1;
         }
         if (argc < 3) {
-            cout << "\033[31m✗ Usage: ./calendar createevent \"<title>\" --date 2082-01-22 --time 10:00 --desc \"<desc>\"\033[0m\n";
+            cout << "\033[31m✗ Usage: nepcal createevent \"<title>\" --date 2082-01-22 --time 10:00 --desc \"<desc>\"\033[0m\n";
             return 1;
         }
         Event e;
@@ -281,7 +243,7 @@ int main(int argc, char* argv[]) {
     // ── events ────────────────────────────────────────────────────────────────
     if (cmd == "events") {
         if (session.empty()) {
-            cout << "\033[31m✗ Login first: ./calendar login <user> <pass>\033[0m\n";
+            cout << "\033[31m✗ Login first: nepcal login <user> <pass>\033[0m\n";
             return 1;
         }
         string dateArg   = getArg(argc, argv, "--date");
@@ -306,7 +268,7 @@ int main(int argc, char* argv[]) {
     // ── deleteevent ───────────────────────────────────────────────────────────
     if (cmd == "deleteevent") {
         if (session.empty()) {
-            cout << "\033[31m✗ Login first: ./calendar login <user> <pass>\033[0m\n";
+            cout << "\033[31m✗ Login first: nepcal login <user> <pass>\033[0m\n";
             return 1;
         }
         vector<Event> all = eventManager.getAllEvents();
@@ -319,7 +281,7 @@ int main(int argc, char* argv[]) {
             for (int i = 0; i < (int)all.size(); i++)
                 cout << "  [" << i + 1 << "] "
                      << all[i].title << "  (" << all[i].date << ")\n";
-            cout << "\n\033[33m  Usage: ./calendar deleteevent <number>\033[0m\n";
+            cout << "\n\033[33m  Usage: nepcal deleteevent <number>\033[0m\n";
             return 0;
         }
         int num = stoi(argv[2]);
@@ -333,6 +295,6 @@ int main(int argc, char* argv[]) {
 
     // ── Unknown ───────────────────────────────────────────────────────────────
     cout << "\033[31m✗ Unknown command: \"" << cmd << "\"\033[0m\n";
-    cout << "  Run \033[36m./calendar help\033[0m to see all commands.\n";
+    cout << "  Run \033[36mnepcal help\033[0m to see all commands.\n";
     return 1;
 }

@@ -198,7 +198,6 @@ void CalendarDisplay::displayMonth(int bs_month, int bs_year,
     int days_in_month = nepali_month_days[idx][bs_month - 1];
     int start_day     = getBSWeekday(bs_year, bs_month, 1);
 
-    // Build list of days that have events
     std::vector<int> eventDays;
     for (const auto& e : eventList) {
         if (e.date.size() != 10) continue;
@@ -238,15 +237,12 @@ void CalendarDisplay::displayMonth(int bs_month, int bs_year,
 
     std::cout << "\033[1;36m╚══════════════════════════════════════════╝\033[0m\n";
 
-    // ── Day header ────────────────────────────────────────────────────────────
     std::cout << "  Sun  Mon  Tue  Wed  Thu  Fri ";
     std::cout << "\033[31m Sat\033[0m\n";
     std::cout << "─────────────────────────────────────\n";
 
-    // ── Leading blank cells ───────────────────────────────────────────────────
     for (int i = 0; i < start_day; i++) std::cout << "     ";
 
-    // ── Day numbers ───────────────────────────────────────────────────────────
     for (int day = 1; day <= days_in_month; day++) {
         int  col      = (start_day + day - 1) % 7;
         bool hasEvent = false;
@@ -268,7 +264,6 @@ void CalendarDisplay::displayMonth(int bs_month, int bs_year,
         if (col == 6) std::cout << "\n";
     }
 
-    // ── Legend after grid ─────────────────────────────────────────────────────
     std::cout << "\n";
     std::cout << "  \033[1;32m d \033[0m = Today    "
               << "\033[1;33m d*\033[0m = Event\n";
@@ -358,7 +353,6 @@ void CalendarDisplay::displayEvents(const std::vector<Event>& eventList) {
         return;
     }
 
-    // Sort by date ascending
     std::vector<Event> sorted = eventList;
     std::sort(sorted.begin(), sorted.end(),
         [](const Event& a, const Event& b) {
@@ -382,35 +376,34 @@ void CalendarDisplay::displayEvents(const std::vector<Event>& eventList) {
 
 void CalendarDisplay::displayHelp() {
     std::cout << "\n\033[1;36m╔══════════════════════════════════════════════════════════════╗\033[0m\n";
-    std::cout << "\033[1;36m║          NEPALI CALENDAR EVENT MANAGER - HELP                ║\033[0m\n";
+    std::cout << "\033[1;36m║            NEPALI CALENDAR EVENT MANAGER - HELP              ║\033[0m\n";
     std::cout << "\033[1;36m╚══════════════════════════════════════════════════════════════╝\033[0m\n";
 
     std::cout << "\n\033[33m── CALENDAR ────────────────────────────────────────────────────\033[0m\n";
-    std::cout << "  ./calendar                        Today's BS calendar + today's events\n";
-    std::cout << "  ./calendar today                  Same as above with full date info\n";
-    std::cout << "  ./calendar -y 2082                Full BS year\n";
-    std::cout << "  ./calendar -m 6                   BS month (current year) + events\n";
-    std::cout << "  ./calendar -m 6 -y 2082           Specific BS month + events\n";
-    std::cout << "  ./calendar ad                     Today's AD month\n";
-    std::cout << "  ./calendar ad -m 3 -y 2026        Specific AD month\n";
+    std::cout << "  nepcal                              Today's BS calendar\n";
+    std::cout << "  nepcal -m 6                         BS month 6 of current year\n";
+    std::cout << "  nepcal -m 6 -y 2082                 BS month 6 of year 2082\n";
+    std::cout << "  nepcal -y 2082                      Full BS year 2082\n";
+    std::cout << "  nepcal ad                           Today's AD month\n";
+    std::cout << "  nepcal ad -m 3 -y 2026              Specific AD month\n";
 
     std::cout << "\n\033[33m── DATE CONVERTER ──────────────────────────────────────────────\033[0m\n";
-    std::cout << "  ./calendar convert 2082-01-22     BS → AD\n";
-    std::cout << "  ./calendar convert-ad 2026-04-05  AD → BS\n";
+    std::cout << "  nepcal convert 2082-01-22           BS → AD\n";
+    std::cout << "  nepcal convert-ad 2026-04-05        AD → BS\n";
 
     std::cout << "\n\033[33m── USER ────────────────────────────────────────────────────────\033[0m\n";
-    std::cout << "  ./calendar register <user> <pass> <email>\n";
-    std::cout << "  ./calendar login <user> <pass>\n";
-    std::cout << "  ./calendar logout\n";
-    std::cout << "  ./calendar whoami\n";
+    std::cout << "  nepcal register <user> <pass> <email>\n";
+    std::cout << "  nepcal login <user> <pass>\n";
+    std::cout << "  nepcal logout\n";
+    std::cout << "  nepcal whoami\n";
 
     std::cout << "\n\033[33m── EVENTS ──────────────────────────────────────────────────────\033[0m\n";
-    std::cout << "  ./calendar createevent \"<title>\" --date 2082-01-22 --time 10:00 --desc \"<text>\"\n";
-    std::cout << "  ./calendar events                 All events\n";
-    std::cout << "  ./calendar events --date 2082-01-22\n";
-    std::cout << "  ./calendar events --search <word>\n";
-    std::cout << "  ./calendar deleteevent            List events to pick number\n";
-    std::cout << "  ./calendar deleteevent <number>   Delete by number\n";
+    std::cout << "  nepcal createevent \"<title>\" --date 2082-01-22 --time 10:00 --desc \"<text>\"\n";
+    std::cout << "  nepcal events                       All events\n";
+    std::cout << "  nepcal events --date 2082-01-22     Events on a date\n";
+    std::cout << "  nepcal events --search <word>       Search by title\n";
+    std::cout << "  nepcal deleteevent                  List events then pick number\n";
+    std::cout << "  nepcal deleteevent <number>         Delete by number\n";
 
     std::cout << "\n\033[33m── LEGEND ──────────────────────────────────────────────────────\033[0m\n";
     std::cout << "  \033[1;32m d \033[0m = Today\n";
