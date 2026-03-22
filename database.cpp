@@ -1,38 +1,43 @@
-cat > database.cpp << 'EOF'
 #include <iostream>
 #include <fstream>
 #include <string>
 
+struct User {
+    std::string username;
+    std::string password;
+    std::string email;
+};
+
+struct Event {
+    std::string title;
+    std::string date;
+    std::string time;
+    std::string description;
+};
+
 class Database {
-private:
-    std::string eventsFile = "events.dat";
-    std::string usersFile = "users.dat";
-
 public:
-    void initializeDatabase() {
-        std::cout << "Database initialized!" << std::endl;
+    void connect(const std::string& dbString) {
+        std::cout << "Database connected!" << std::endl;
     }
 
-    void saveEventToFile(const std::string &title, const std::string &date, const std::string &time, const std::string &description) {
-        std::ofstream file(eventsFile, std::ios::app);
+    void disconnect() {
+        std::cout << "Database disconnected!" << std::endl;
+    }
+
+    void saveUserData(const User& user) {
+        std::ofstream file("users.dat", std::ios::app);
         if (file.is_open()) {
-            file << title << "|" << date << "|" << time << "|" << description << "\n";
+            file << user.username << "|" << user.password << "|" << user.email << "\n";
             file.close();
-            std::cout << "Event saved!" << std::endl;
         }
     }
 
-    void saveUserToFile(const std::string &username, const std::string &password, const std::string &email) {
-        std::ofstream file(usersFile, std::ios::app);
+    void saveEventData(const Event& event) {
+        std::ofstream file("events.dat", std::ios::app);
         if (file.is_open()) {
-            file << username << "|" << password << "|" << email << "\n";
+            file << event.title << "|" << event.date << "|" << event.time << "|" << event.description << "\n";
             file.close();
-            std::cout << "User saved!" << std::endl;
         }
-    }
-
-    void backupData() {
-        std::cout << "Backup created!" << std::endl;
     }
 };
-EOF
