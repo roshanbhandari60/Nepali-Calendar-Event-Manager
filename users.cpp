@@ -1,57 +1,97 @@
-// users.cpp
-
 #include <iostream>
+#include <fstream>
 #include <string>
-#include <unordered_map>
-#include <cstdlib>
-#include <ctime>
+#include "calendar.h"
 
-class User {
-public:
+extern std::vector<User> users;
+
+#define SESSION_FILE ".cal_session"
+
+// ── Session ───────────────────────────────────────────────────────────────────
+
+static void saveSession(const std::string& username) {
+    std::ofstream f(SESSION_FILE);
+    if (f.is_open()) { f << username << "\n"; f.close(); }
+}
+
+static void clearSession() {
+    std::ofstream f(SESSION_FILE, std::ios::trunc);
+    f.close();
+}
+
+std::string UserManager::getSession() {
+    std::ifstream f(SESSION_FILE);
+    if (!f.is_open()) return "";
     std::string username;
-    std::string password;
-    std::string session;
+    std::getline(f, username);
+    f.close();
+    return username;
+}
 
-    User(std::string user, std::string pass) : username(user), password(pass) {}
-};
+// ── Register ──────────────────────────────────────────────────────────────────
 
-class UserManager {
-private:
-    std::unordered_map<std::string, User> userDatabase;
-
-public:
-    void registerUser(const std::string &username, const std::string &password) {
-        userDatabase[username] = User(username, password);
+void UserManager::registerUser(const User& user) {
+    for (const auto& u : users) {
+        if (u.username == user.username) {
+            std::cout << "\033[31m✗ Username \"" << user.username
+                      << "\" already exists!\033[0m\n";
+            return;
+        }
     }
+    users.push_back(user);
 
-    bool authenticateUser(const std::string &username, const std::string &password) {
-        if (userDatabase.find(username) != userDatabase.end() && userDatabase[username].password == password) {
-            generateSession(username);
+    std::ofstream file("users.dat", std::ios::app);
+    if (file.is_open()) {
+        file << user.username << "|"
+             << user.password << "|"
+             << user.email    << "\n";
+        file.close();
+        std::cout << "\033[32m✓ User \"" << user.username
+                  << "\" registered successfully!\033[0m\n";
+    } else {
+        std::cout << "\033[31m✗ Could not save user to file!\033[0m\n";
+    }
+}
+
+// ── Login ─────────────────────────────────────────────────────────────────────
+
+bool UserManager::loginUser(const std::string& username,
+                            const std::string& password) {
+    for (const auto& user : users) {
+        if (user.username == username && user.password == password) {
+            saveSession(username);
+            std::cout << "\033[32m✓ Logged in as \"" << username << "\"\033[0m\n";
             return true;
         }
-        return false;
     }
+    std::cout << "\033[31m✗ Invalid username or password!\033[0m\n";
+    return false;
+}
 
-    bool verifyPassword(const std::string &username, const std::string &password) {
-        return userDatabase.find(username) != userDatabase.end() && userDatabase[username].password == password;
+// ── Logout ────────────────────────────────────────────────────────────────────
+
+void UserManager::logoutUser() {
+    clearSession();
+    std::cout << "\033[32m✓ Logged out successfully!\033[0m\n";
+}
+
+// ── Load users from file ──────────────────────────────────────────────────────
+
+void loadUsersFromFile() {
+    std::ifstream file("users.dat");
+    if (!file.is_open()) return;
+
+    std::string line;
+    while (std::getline(file, line)) {
+        if (line.empty()) continue;
+        User u;
+        size_t p1 = line.find('|');
+        size_t p2 = line.find('|', p1 + 1);
+        if (p1 == std::string::npos || p2 == std::string::npos) continue;
+        u.username = line.substr(0, p1);
+        u.password = line.substr(p1 + 1, p2 - p1 - 1);
+        u.email    = line.substr(p2 + 1);
+        if (!u.username.empty()) users.push_back(u);
     }
-
-    void generateSession(const std::string &username) {
-        std::string session = std::to_string(std::time(nullptr)) + username;
-        userDatabase[username].session = session;
-        std::cout << "Session created for user: " << username << \" with session ID: " << session << std::endl;
-    }
-};
-
-int main() {
-    UserManager um;
-    um.registerUser("john_doe", "password123");
-
-    if (um.authenticateUser("john_doe", "password123")) {
-        std::cout << "User authenticated successfully!" << std::endl;
-    } else {
-        std::cout << "Authentication failed!" << std::endl;
-    }
-
-    return 0;
+    file.close();
 }
