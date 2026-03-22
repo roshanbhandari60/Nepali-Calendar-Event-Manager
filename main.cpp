@@ -34,6 +34,7 @@ int main(int argc, char* argv[]) {
     string session = userManager.getSession();
 
     // ── No args: today ────────────────────────────────────────────────────────
+    
     if (argc == 1) {
         auto today = CalendarDisplay::todayBS();
 
