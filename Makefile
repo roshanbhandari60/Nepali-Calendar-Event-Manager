@@ -1,21 +1,19 @@
-CXX = g++
+CXX      = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra
-TARGET = calendar
-SOURCES = main.cpp calendar.cpp users.cpp events.cpp display.cpp database.cpp
-OBJECTS = $(SOURCES:.cpp=.o)
+TARGET   = nepcal
+
+SRCS = main.cpp calendar.cpp display.cpp events.cpp users.cpp database.cpp
+OBJS = $(SRCS:.cpp=.o)
+
 all: $(TARGET)
-$(TARGET): $(OBJECTS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJECTS)
+
+$(TARGET): $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS)
+
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $<
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
 clean:
-	rm -f $(OBJECTS) $(TARGET)
-run: $(TARGET)
-	./$(TARGET)
-help:
-	@echo "Nepali Calendar Event Manager"
-	@echo "make - Compile"
-	@echo "make clean - Clean"
-	@echo "make run - Run"
-.PHONY: all clean run help
-.PHONY: all clean run help
+	rm -f $(OBJS) $(TARGET)
+
+.PHONY: all clean
