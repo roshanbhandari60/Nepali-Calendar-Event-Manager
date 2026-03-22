@@ -380,7 +380,7 @@ void CalendarDisplay::displayHelp() {
     std::cout << "\033[1;36m╚══════════════════════════════════════════════════════════════╝\033[0m\n";
 
     std::cout << "\n\033[33m── CALENDAR ────────────────────────────────────────────────────\033[0m\n";
-    std::cout << "  nepcal                              Today's BS calendar + date + events\n";
+    std::cout << "  nepcal                              Today's BS calendar\n";
     std::cout << "  nepcal -m 6                         BS month 6 of current year\n";
     std::cout << "  nepcal -m 6 -y 2082                 BS month 6 of year 2082\n";
     std::cout << "  nepcal -y 2082                      Full BS year 2082\n";
