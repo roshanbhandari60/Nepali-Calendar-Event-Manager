@@ -43,7 +43,10 @@ int main(int argc, char* argv[]) {
         snprintf(todayStr, sizeof(todayStr), "%04d-%02d-%02d",
                  today.year, today.month, today.day);
 
-        vector<Event> monthEvents = eventManager.getEventsByMonth(today.year, today.month);
+        // Only highlight this user's events on the calendar
+        vector<Event> monthEvents = eventManager.getEventsByMonth(
+            today.year, today.month, session);
+
         calendarDisplay.displayMonth(today.month, today.year, today.day, monthEvents);
 
         time_t t = time(nullptr);
@@ -57,18 +60,23 @@ int main(int argc, char* argv[]) {
              << CalendarDisplay::ad_month_names[ti->tm_mon]
              << " " << ti->tm_year + 1900 << "\033[0m\n";
 
-        vector<Event> todayEvents = eventManager.getEventsByDate(string(todayStr));
-        if (todayEvents.empty()) {
-            cout << "\033[33m  No events today.\033[0m\n\n";
-        } else {
-            cout << "\n\033[1;33m  Events today:\033[0m\n";
-            for (int i = 0; i < (int)todayEvents.size(); i++) {
-                cout << "  \033[1;33m[" << i + 1 << "] "
-                     << todayEvents[i].title << "\033[0m"
-                     << "  at " << todayEvents[i].time << "\n";
-                cout << "      " << todayEvents[i].description << "\n";
+        if (!session.empty()) {
+            vector<Event> todayEvents = eventManager.getEventsByDate(
+                string(todayStr), session);
+            if (todayEvents.empty()) {
+                cout << "\033[33m  No events today.\033[0m\n\n";
+            } else {
+                cout << "\n\033[1;33m  Events today:\033[0m\n";
+                for (int i = 0; i < (int)todayEvents.size(); i++) {
+                    cout << "  \033[1;33m[" << i + 1 << "] "
+                         << todayEvents[i].title << "\033[0m"
+                         << "  at " << todayEvents[i].time << "\n";
+                    cout << "      " << todayEvents[i].description << "\n";
+                }
+                cout << "\n";
             }
-            cout << "\n";
+        } else {
+            cout << "\033[33m  Login to see your events: nepcal login <user> <pass>\033[0m\n\n";
         }
         return 0;
     }
@@ -95,7 +103,8 @@ int main(int argc, char* argv[]) {
         string yStr = getArg(argc, argv, "-y");
         year = !yStr.empty() ? stoi(yStr) : CalendarDisplay::todayBS().year;
 
-        vector<Event> monthEvents = eventManager.getEventsByMonth(year, month);
+        vector<Event> monthEvents = eventManager.getEventsByMonth(
+            year, month, session);
 
         auto today = CalendarDisplay::todayBS();
         int highlightDay = (today.year == year && today.month == month)
@@ -103,7 +112,9 @@ int main(int argc, char* argv[]) {
 
         calendarDisplay.displayMonth(month, year, highlightDay, monthEvents);
 
-        if (monthEvents.empty()) {
+        if (session.empty()) {
+            cout << "\033[33m  Login to see your events: nepcal login <user> <pass>\033[0m\n\n";
+        } else if (monthEvents.empty()) {
             cout << "\033[33m  No events this month.\033[0m\n\n";
         } else {
             cout << "\n\033[1;33m  Events in "
@@ -220,6 +231,7 @@ int main(int argc, char* argv[]) {
             return 1;
         }
         Event e;
+        e.username    = session;      // ← tag event with the logged-in user
         e.title       = argv[2];
         e.date        = getArg(argc, argv, "--date");
         e.time        = getArg(argc, argv, "--time");
@@ -247,11 +259,11 @@ int main(int argc, char* argv[]) {
         vector<Event> result;
 
         if (!dateArg.empty()) {
-            result = eventManager.getEventsByDate(dateArg);
+            result = eventManager.getEventsByDate(dateArg, session);
         } else if (!searchArg.empty()) {
-            result = eventManager.searchByTitle(searchArg);
+            result = eventManager.searchByTitle(searchArg, session);
         } else {
-            result = eventManager.getAllEvents();
+            result = eventManager.getAllEvents(session);
         }
 
         if (result.empty())
@@ -267,25 +279,26 @@ int main(int argc, char* argv[]) {
             cout << "\033[31m✗ Login first: nepcal login <user> <pass>\033[0m\n";
             return 1;
         }
-        vector<Event> all = eventManager.getAllEvents();
-        if (all.empty()) {
+        // Only show and count THIS user's events
+        vector<Event> myEvents = eventManager.getAllEvents(session);
+        if (myEvents.empty()) {
             cout << "\033[33m  No events to delete.\033[0m\n";
             return 0;
         }
         if (argc < 3) {
-            cout << "\n\033[36m  Available events:\033[0m\n";
-            for (int i = 0; i < (int)all.size(); i++)
+            cout << "\n\033[36m  Your events:\033[0m\n";
+            for (int i = 0; i < (int)myEvents.size(); i++)
                 cout << "  [" << i + 1 << "] "
-                     << all[i].title << "  (" << all[i].date << ")\n";
+                     << myEvents[i].title << "  (" << myEvents[i].date << ")\n";
             cout << "\n\033[33m  Usage: nepcal deleteevent <number>\033[0m\n";
             return 0;
         }
         int num = stoi(argv[2]);
-        if (num < 1 || num > (int)all.size()) {
+        if (num < 1 || num > (int)myEvents.size()) {
             cout << "\033[31m✗ Invalid number!\033[0m\n";
             return 1;
         }
-        eventManager.deleteEvent(num - 1);
+        eventManager.deleteEvent(num - 1, session);
         return 0;
     }
 

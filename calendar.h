@@ -5,6 +5,9 @@
 #include <vector>
 #include <iostream>
 
+// Returns ~/.nepcal/ and creates the directory if it doesn't exist
+std::string getDataDir();
+
 struct User {
     std::string username;
     std::string password;
@@ -12,6 +15,7 @@ struct User {
 };
 
 struct Event {
+    std::string username;     // owner — who created this event
     std::string title;
     std::string description;
     std::string date;
@@ -29,11 +33,11 @@ public:
 class EventManager {
 public:
     void createEvent(const Event& event);
-    void deleteEvent(int index);
-    std::vector<Event> getEventsByDate(const std::string& date);
-    std::vector<Event> getEventsByMonth(int bs_year, int bs_month);
-    std::vector<Event> getAllEvents();
-    std::vector<Event> searchByTitle(const std::string& keyword);
+    void deleteEvent(int index, const std::string& username);
+    std::vector<Event> getEventsByDate(const std::string& date, const std::string& username);
+    std::vector<Event> getEventsByMonth(int bs_year, int bs_month, const std::string& username);
+    std::vector<Event> getAllEvents(const std::string& username);
+    std::vector<Event> searchByTitle(const std::string& keyword, const std::string& username);
 };
 
 class CalendarDisplay {
@@ -49,7 +53,6 @@ public:
     static int     getBSWeekday(int bs_y, int bs_m, int bs_d);
     static NepDate todayBS();
 
-    // eventList is used to highlight days that have events
     void displayMonth(int bs_month, int bs_year,
                       int highlight_day = -1,
                       const std::vector<Event>& eventList = {});

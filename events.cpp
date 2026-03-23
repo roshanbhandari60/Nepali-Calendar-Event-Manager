@@ -5,11 +5,15 @@
 
 extern std::vector<Event> events;
 
+// ── Rewrite entire events.dat from in-memory vector ───────────────────────────
+
 static void rewriteEventsFile() {
-    std::ofstream file("events.dat", std::ios::trunc);
+    std::string path = getDataDir() + "events.dat";
+    std::ofstream file(path, std::ios::trunc);
     if (!file.is_open()) return;
     for (const auto& e : events) {
-        file << e.title       << "|"
+        file << e.username    << "|"
+             << e.title       << "|"
              << e.date        << "|"
              << e.time        << "|"
              << e.description << "\n";
@@ -17,11 +21,16 @@ static void rewriteEventsFile() {
     file.close();
 }
 
+// ── Create ────────────────────────────────────────────────────────────────────
+
 void EventManager::createEvent(const Event& event) {
     events.push_back(event);
-    std::ofstream file("events.dat", std::ios::app);
+
+    std::string path = getDataDir() + "events.dat";
+    std::ofstream file(path, std::ios::app);
     if (file.is_open()) {
-        file << event.title       << "|"
+        file << event.username    << "|"
+             << event.title       << "|"
              << event.date        << "|"
              << event.time        << "|"
              << event.description << "\n";
@@ -33,33 +42,56 @@ void EventManager::createEvent(const Event& event) {
     }
 }
 
-void EventManager::deleteEvent(int index) {
-    if (index < 0 || index >= (int)events.size()) {
+// ── Delete ────────────────────────────────────────────────────────────────────
+// index here is relative to THIS user's event list, not the global list
+
+void EventManager::deleteEvent(int index, const std::string& username) {
+    // Collect this user's events with their global indices
+    std::vector<int> myIndices;
+    for (int i = 0; i < (int)events.size(); i++) {
+        if (events[i].username == username)
+            myIndices.push_back(i);
+    }
+
+    if (index < 0 || index >= (int)myIndices.size()) {
         std::cout << "\033[31m✗ Invalid event number!\033[0m\n";
         return;
     }
-    std::string title = events[index].title;
-    events.erase(events.begin() + index);
+
+    std::string title = events[myIndices[index]].title;
+    events.erase(events.begin() + myIndices[index]);
     rewriteEventsFile();
     std::cout << "\033[32m✓ Event \"" << title << "\" deleted!\033[0m\n";
 }
 
-std::vector<Event> EventManager::getAllEvents() {
-    return events;
-}
+// ── Get all events for this user ──────────────────────────────────────────────
 
-std::vector<Event> EventManager::getEventsByDate(const std::string& date) {
+std::vector<Event> EventManager::getAllEvents(const std::string& username) {
     std::vector<Event> result;
     for (const auto& e : events)
-        if (e.date == date) result.push_back(e);
+        if (e.username == username) result.push_back(e);
     return result;
 }
 
-// Returns all events in a given BS year and month
-std::vector<Event> EventManager::getEventsByMonth(int bs_year, int bs_month) {
+// ── Get events by date for this user ─────────────────────────────────────────
+
+std::vector<Event> EventManager::getEventsByDate(const std::string& date,
+                                                  const std::string& username) {
+    std::vector<Event> result;
+    for (const auto& e : events)
+        if (e.username == username && e.date == date)
+            result.push_back(e);
+    return result;
+}
+
+// ── Get events by BS month for this user ──────────────────────────────────────
+
+std::vector<Event> EventManager::getEventsByMonth(int bs_year, int bs_month,
+                                                   const std::string& username) {
     std::vector<Event> result;
     for (const auto& e : events) {
-        if (e.date.size() != 10) continue;
+        if (e.username != username)    continue;
+        if (e.date.size() != 10)       continue;
         try {
             int ey = std::stoi(e.date.substr(0, 4));
             int em = std::stoi(e.date.substr(5, 2));
@@ -70,11 +102,16 @@ std::vector<Event> EventManager::getEventsByMonth(int bs_year, int bs_month) {
     return result;
 }
 
-std::vector<Event> EventManager::searchByTitle(const std::string& keyword) {
+// ── Search by title for this user ─────────────────────────────────────────────
+
+std::vector<Event> EventManager::searchByTitle(const std::string& keyword,
+                                                const std::string& username) {
     std::vector<Event> result;
     std::string lowerKey = keyword;
     std::transform(lowerKey.begin(), lowerKey.end(), lowerKey.begin(), ::tolower);
+
     for (const auto& e : events) {
+        if (e.username != username) continue;
         std::string lowerTitle = e.title;
         std::transform(lowerTitle.begin(), lowerTitle.end(), lowerTitle.begin(), ::tolower);
         if (lowerTitle.find(lowerKey) != std::string::npos)
@@ -83,24 +120,35 @@ std::vector<Event> EventManager::searchByTitle(const std::string& keyword) {
     return result;
 }
 
+// ── Load events from file ─────────────────────────────────────────────────────
+
 void loadEventsFromFile() {
-    std::ifstream file("events.dat");
+    std::string path = getDataDir() + "events.dat";
+    std::ifstream file(path);
     if (!file.is_open()) return;
+
     std::string line;
     while (std::getline(file, line)) {
         if (line.empty()) continue;
-        Event e;
+
+        // Format: username|title|date|time|description
         size_t p1 = line.find('|');
         size_t p2 = line.find('|', p1 + 1);
         size_t p3 = line.find('|', p2 + 1);
-        if (p1 == std::string::npos ||
-            p2 == std::string::npos ||
-            p3 == std::string::npos) continue;
-        e.title       = line.substr(0, p1);
-        e.date        = line.substr(p1 + 1, p2 - p1 - 1);
-        e.time        = line.substr(p2 + 1, p3 - p2 - 1);
-        e.description = line.substr(p3 + 1);
-        if (!e.title.empty()) events.push_back(e);
+        size_t p4 = line.find('|', p3 + 1);
+
+        if (p1 == std::string::npos || p2 == std::string::npos ||
+            p3 == std::string::npos || p4 == std::string::npos) continue;
+
+        Event e;
+        e.username    = line.substr(0, p1);
+        e.title       = line.substr(p1 + 1, p2 - p1 - 1);
+        e.date        = line.substr(p2 + 1, p3 - p2 - 1);
+        e.time        = line.substr(p3 + 1, p4 - p3 - 1);
+        e.description = line.substr(p4 + 1);
+
+        if (!e.username.empty() && !e.title.empty())
+            events.push_back(e);
     }
     file.close();
 }

@@ -5,22 +5,24 @@
 
 extern std::vector<User> users;
 
-#define SESSION_FILE ".cal_session"
-
 // ── Session ───────────────────────────────────────────────────────────────────
 
+static std::string sessionFile() {
+    return getDataDir() + ".cal_session";
+}
+
 static void saveSession(const std::string& username) {
-    std::ofstream f(SESSION_FILE);
+    std::ofstream f(sessionFile());
     if (f.is_open()) { f << username << "\n"; f.close(); }
 }
 
 static void clearSession() {
-    std::ofstream f(SESSION_FILE, std::ios::trunc);
+    std::ofstream f(sessionFile(), std::ios::trunc);
     f.close();
 }
 
 std::string UserManager::getSession() {
-    std::ifstream f(SESSION_FILE);
+    std::ifstream f(sessionFile());
     if (!f.is_open()) return "";
     std::string username;
     std::getline(f, username);
@@ -40,7 +42,8 @@ void UserManager::registerUser(const User& user) {
     }
     users.push_back(user);
 
-    std::ofstream file("users.dat", std::ios::app);
+    std::string path = getDataDir() + "users.dat";
+    std::ofstream file(path, std::ios::app);
     if (file.is_open()) {
         file << user.username << "|"
              << user.password << "|"
@@ -78,7 +81,8 @@ void UserManager::logoutUser() {
 // ── Load users from file ──────────────────────────────────────────────────────
 
 void loadUsersFromFile() {
-    std::ifstream file("users.dat");
+    std::string path = getDataDir() + "users.dat";
+    std::ifstream file(path);
     if (!file.is_open()) return;
 
     std::string line;

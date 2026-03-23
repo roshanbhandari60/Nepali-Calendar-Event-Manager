@@ -10,7 +10,8 @@ fi
 
 echo "Step 1: Compiling..."
 
-g++ -std=c++17 -o nepcal main.cpp calendar.cpp display.cpp events.cpp users.cpp database.cpp
+g++ -std=c++17 -o nepcal \
+    main.cpp calendar.cpp display.cpp events.cpp users.cpp database.cpp
 
 if [ $? -ne 0 ]
 then
@@ -19,17 +20,22 @@ then
 fi
 
 echo "Step 2: Compiled successfully."
-echo "Step 3: Installing to /usr/local/bin (requires sudo password)..."
 
+echo "Step 3: Creating data directory at ~/.nepcal ..."
+mkdir -p "$HOME/.nepcal"
+
+echo "Step 4: Installing to /usr/local/bin (requires sudo password)..."
 sudo cp nepcal /usr/local/bin/nepcal
 sudo chmod +x /usr/local/bin/nepcal
 
 echo ""
-echo "=== Done! You can now type from anywhere: ==="
+echo "=== Done! ==="
 echo ""
-echo "  nepcal"
-echo "  nepcal help"
-echo "  nepcal register roshan pass123 email@example.com"
-echo "  nepcal login roshan pass123"
-echo "  nepcal createevent \"Meeting\" --date 2082-01-22 --time 10:00"
+echo "  nepcal                     show today"
+echo "  nepcal help                all commands"
+echo "  nepcal register u p email  register"
+echo "  nepcal login u p           login"
+echo ""
+echo "  Data is stored in: $HOME/.nepcal/"
+echo "  (same files used from every terminal)"
 echo ""

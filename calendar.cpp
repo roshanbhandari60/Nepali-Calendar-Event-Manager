@@ -1,11 +1,26 @@
 #include <iostream>
 #include <vector>
+#include <string>
+#include <cstdlib>
+#include <sys/stat.h>
 #include "calendar.h"
 
 // ── Global data stores ────────────────────────────────────────────────────────
 
 std::vector<User>  users;
 std::vector<Event> events;
+
+// ── Data directory ────────────────────────────────────────────────────────────
+
+// Always stores data in ~/.nepcal/ so the same files are used
+// no matter which folder you run nepcal from.
+std::string getDataDir() {
+    const char* home = getenv("HOME");
+    if (!home) home = "/tmp";
+    std::string dir = std::string(home) + "/.nepcal";
+    mkdir(dir.c_str(), 0755);   // creates the folder if it doesn't exist yet
+    return dir + "/";
+}
 
 // ── Database ──────────────────────────────────────────────────────────────────
 
@@ -18,9 +33,9 @@ void Database::disconnect() {
 }
 
 void Database::saveUserData(const User& /*user*/) {
-    // Saving is handled inside UserManager::registerUser
+    // Handled inside UserManager::registerUser
 }
 
 void Database::saveEventData(const Event& /*event*/) {
-    // Saving is handled inside EventManager::createEvent
+    // Handled inside EventManager::createEvent
 }
