@@ -1,194 +1,156 @@
-# Nepali Calendar Event Management System
+# Nepali Calendar Event Manager
 
-## Overview
-A comprehensive calendar and event management system designed for managing events with Nepali date support. Built in C++ with multi-user support, event reminders, and persistent storage.
+A command-line calendar and event management system with full Bikram Sambat (BS) and AD date support, built in C++.
+
+---
 
 ## Features
-- ✅ User registration and login
-- ✅ Create, edit, delete, and search events
-- ✅ Multiple calendar views (day, week, month)
-- ✅ Nepali date conversion and support
-- ✅ Event reminders and notifications
-- ✅ Share events with other users
-- ✅ Persistent storage (file-based database)
-- ✅ Color-coded terminal interface
-- ✅ Event backup and restore
+
+- View the current BS/AD month calendar in the terminal
+- BS ↔ AD date conversion
+- User registration, login, and session management
+- Create, list, search, and delete events
+- Events are highlighted directly on the calendar grid
+- Color-coded terminal interface
+- Persistent file-based storage (`users.dat`, `events.dat`)
+- Supports BS years 2070–2090
+
+---
 
 ## File Structure
+
 ```
 Nepali-Calendar-Event-Manager/
-├── calendar.h              # Main header file
-├── calendar.cpp            # Core implementation
-├── main.cpp                # Interactive menu system
-├── users.cpp               # User management
-├── events.cpp              # Event management
-├── database.cpp            # Database operations
-├── nepali_date.cpp         # Nepali date conversion
-├── Makefile                # Build configuration
-├── README.md               # This file
-├── LICENSE                 # MIT License
-└── .gitignore              # Git ignore rules
+├── calendar.h          # Structs, class declarations
+├── calendar.cpp        # Global data stores, Database stubs
+├── display.cpp         # Calendar rendering (BS & AD views, help)
+├── events.cpp          # Event CRUD and file I/O
+├── users.cpp           # User registration, login, session
+├── nepali_date.cpp     # Nepali date utility (standalone)
+├── main.cpp            # CLI entry point and command routing
+├── Makefile            # Build configuration
+└── README.md           # This file
 ```
 
-## Installation
+---
+
+## Build & Run
 
 ### Prerequisites
-- C++ 17 or higher
-- g++ compiler
-- Linux/Mac/Windows with terminal
+
+- g++ with C++17 support
+- Linux, macOS, or Windows (with a POSIX-compatible terminal)
 
 ### Compile
+
 ```bash
-make clean
 make
 ```
 
 ### Run
+
 ```bash
 ./calendar
 ```
 
-## Usage
+---
 
-### Main Menu
-```
---- Nepali Calendar Event Manager ---
-1. Register
-2. Login
-3. Create Event
-4. View Calendar
-5. Search Events
-6. Exit
-```
+## Commands
 
-### Example Workflow
-1. **Register a new user**
-   ```
-   Username: roshan
-   Password: pass123
-   ```
-
-2. **Login**
-   ```
-   Username: roshan
-   Password: pass123
-   ```
-
-3. **Create an event**
-   ```
-   Event Title: Team Meeting
-   Date: 2080-01-15
-   Time: 10:00-11:00
-   Description: Quarterly review meeting
-   ```
-
-4. **View your calendar**
-   - See all upcoming events
-
-5. **Search events**
-   - Search by title or description
-
-## OS Concepts Demonstrated
-
-### 1. User Management
-- Authentication and authorization
-- Session management
-- Password protection
-- User database
-
-### 2. File System
-- File I/O operations
-- Data persistence
-- Backup mechanisms
-- File handling
-
-### 3. Data Structures
-- Vectors for dynamic arrays
-- String operations
-- Date/Time management
-- Sorting and searching
-
-### 4. Process Management
-- Multi-user support
-- Event processing
-- Task scheduling
-- Resource management
-
-### 5. Database Concepts
-- File-based storage
-- Data serialization
-- Query operations
-- Data consistency
-
-## Database Files
-- `events.dat` - Stores all events
-- `users.dat` - Stores user credentials
-- `events_backup.dat` - Backup of events
-
-## Commands Reference
+### Calendar Views
 
 | Command | Description |
-|---------|-------------|
-| `make` | Compile the project |
-| `make clean` | Remove compiled files |
-| `make run` | Compile and run |
-| `make help` | Show help |
+|---|---|
+| `./calendar` | Today's BS month + today's events |
+| `./calendar today` | Same with full BS and AD date shown |
+| `./calendar -y 2082` | Full BS year (all 12 months) |
+| `./calendar -m 6` | BS month 6 of the current year |
+| `./calendar -m 6 -y 2082` | Specific BS month and year |
+| `./calendar ad` | Current AD month |
+| `./calendar ad -m 3 -y 2026` | Specific AD month and year |
 
-## Supported Features
+### Date Conversion
 
-### User Functions
-- Register new user
-- Login/Logout
-- Password management
-- User profile
+| Command | Description |
+|---|---|
+| `./calendar convert 2082-01-22` | BS → AD |
+| `./calendar convert-ad 2026-04-05` | AD → BS |
 
-### Event Functions
-- Create events
-- Edit events
-- Delete events
-- Search events
-- Share events
-- Set reminders
+### User Management
 
-### Calendar Functions
-- View day/week/month
-- Nepali date support
-- Event visualization
-- Calendar navigation
+| Command | Description |
+|---|---|
+| `./calendar register <user> <pass> <email>` | Register a new user |
+| `./calendar login <user> <pass>` | Log in |
+| `./calendar logout` | Log out |
+| `./calendar whoami` | Show currently logged-in user |
 
-## Performance Metrics
-- Average response time: < 100ms
-- Storage per event: ~200 bytes
-- Maximum events: 10,000+
-- Maximum users: 1,000+
+### Events (login required)
 
-## OS Subject Concepts Covered
+| Command | Description |
+|---|---|
+| `./calendar createevent "Title" --date 2082-01-22 --time 10:00 --desc "Text"` | Create an event |
+| `./calendar events` | List all events |
+| `./calendar events --date 2082-01-22` | Events on a specific date |
+| `./calendar events --search <keyword>` | Search events by title |
+| `./calendar deleteevent` | List events and pick one to delete |
+| `./calendar deleteevent <number>` | Delete event by number |
 
-✅ **Process Management** - Multi-user event handling  
-✅ **Memory Management** - Dynamic allocation, vectors  
-✅ **File Systems** - File I/O, persistence  
-✅ **Data Structures** - Arrays, strings, sorting  
-✅ **Synchronization** - User sessions  
-✅ **Database Concepts** - Storage and retrieval  
+### Help
 
-## Future Enhancements
-- Cloud sync support
-- Mobile app integration
-- Advanced notifications
-- Recurring events
-- Multi-language support
-- Web interface
-
-## License
-MIT License - See LICENSE file for details
-
-## Author
-Roshan Bhandari
-
-## Support
-For issues or questions, please visit:
-https://github.com/roshanbhandari60/Nepali-Calendar-Event-Manager
+```bash
+./calendar help
+```
 
 ---
 
-**Built with C++17 | Terminal-based | Nepali Date Support | Multi-User**
+## Calendar Legend
+
+| Symbol | Meaning |
+|---|---|
+| `d` (green) | Today |
+| `d*` (green) | Today + has an event |
+| `d*` (yellow) | Has an event |
+| `d` (red) | Saturday |
+
+---
+
+## Data Storage
+
+| File | Contents |
+|---|---|
+| `users.dat` | One user per line: `username\|password\|email` |
+| `events.dat` | One event per line: `title\|date\|time\|description` |
+| `.cal_session` | Currently logged-in username |
+
+---
+
+## Example Workflow
+
+```bash
+# Register and log in
+./calendar register roshan pass123 roshan@example.com
+./calendar login roshan pass123
+
+# Create an event
+./calendar createevent "Team Meeting" --date 2082-01-15 --time 10:00 --desc "Quarterly review"
+
+# View the calendar for that month (event will be highlighted)
+./calendar -m 1 -y 2082
+
+# Search for the event
+./calendar events --search meeting
+
+# Delete the event
+./calendar deleteevent 1
+```
+
+---
+
+## Author
+
+Roshan Bhandari
+
+## License
+
+MIT License
